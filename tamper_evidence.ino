@@ -1,4 +1,4 @@
-//#include <EEPROM.h>
+#include <EEPROM.h>
 
 // set the pins for all the components as constants (might need to switch to const int)
 #define SEG_PIN_A 2
@@ -8,6 +8,7 @@
 #define SEG_PIN_E 6
 #define SEG_PIN_F 7
 #define SEG_PIN_G 8
+#define DISPLAY_DURATION_MILLIS 2000
 // reed switch variables
 #define REED_PIN_1 9
 #define REED_PIN_2 10
@@ -17,7 +18,8 @@
 #define PHOTO_PIN_1 A0
 #define PHOTO_PIN_2 A1
 #define PHOTO_THRESHOLD 25
-#define DISPLAY_DURATION_MILLIS 2000
+// initial code for EEPROM
+#define ADDRESS 0 // EEPROM address byte
 
 int prev_photo_value_1 = 0;
 int photo_value_1 = 0; // store value from photoresistor (0-1023)
@@ -34,10 +36,6 @@ bool display_on = false;
 
 int counter; // sets up the counter that figures out when the box has been tampered with
 
-// initial code for EEPROM
-/** the current address in the EEPROM (i.e. which byte we're going to write to next) **/
-//int addr = 0;
-
 void setup() {
   // setup for all the 7 segment display LEDs pins
   pinMode(SEG_PIN_A, OUTPUT);
@@ -52,9 +50,17 @@ void setup() {
   pinMode(REED_PIN_2, INPUT_PULLUP);
   pinMode(SWITCH_PIN, INPUT_PULLUP);
   //Don't need to set Photo pins, because analogRead does that automatically
+
+  // get the value of counter from EEPROM
+  counter = EEPROM.read(ADDRESS);
 }
 
 void loop() {
+  // if eeprom address has never been written to, the value is 255
+  if (counter == 255) {
+    counter = 0; // so clear the counter to 0 if the value is 255
+  }
+
   reed_value_1 = digitalRead(REED_PIN_1);
   reed_value_2 = digitalRead(REED_PIN_2);
   switch_value = digitalRead(SWITCH_PIN);
@@ -67,21 +73,22 @@ void loop() {
       (reed_value_2 == LOW && prev_reed_value_2 == HIGH) ||
       (photo_value_1 > PHOTO_THRESHOLD && prev_photo_value_1 <= PHOTO_THRESHOLD) ||
       (photo_value_2 > PHOTO_THRESHOLD && prev_photo_value_2 <= PHOTO_THRESHOLD)) {
-    delay(50); //realllllllllllly simple way to debounce;
+    delay(75); //realllllllllllly simple way to debounce;
     // if either the photoresistor or the reed switch are triggered
     counter++; // counter value goes up one
+    // save value in EEPROM address
+    EEPROM.write(ADDRESS, counter);
 
     if (counter > 9) {
       counter = 0;
       // the 7-segment display only goes up to 9, after that it will reset
-      // can add an LED to show the attempts go above 9
     }
   }
 
   if (switch_value == LOW && prev_switch_value == HIGH) {
     display_on = true;
     seg_display(counter);
-    delay(50);
+    delay(75);
     display_on_time_millis = millis();
   }
 
