@@ -53,14 +53,15 @@ void setup() {
 
   // get the value of counter from EEPROM
   counter = EEPROM.read(ADDRESS);
+
+  // if eeprom address has never been written to, the value is 255
+  if (counter == 255) {
+    counter = 0; // so clear the counter first time the system is turned on
+    EEPROM.write(ADDRESS, counter);
+  }
 }
 
 void loop() {
-  // if eeprom address has never been written to, the value is 255
-  if (counter == 255) {
-    counter = 0; // so clear the counter to 0 if the value is 255
-  }
-
   reed_value_1 = digitalRead(REED_PIN_1);
   reed_value_2 = digitalRead(REED_PIN_2);
   switch_value = digitalRead(SWITCH_PIN);
@@ -74,13 +75,13 @@ void loop() {
       (photo_value_1 > PHOTO_THRESHOLD && prev_photo_value_1 <= PHOTO_THRESHOLD) ||
       (photo_value_2 > PHOTO_THRESHOLD && prev_photo_value_2 <= PHOTO_THRESHOLD)) {
     delay(75); //realllllllllllly simple way to debounce;
-    // if either the photoresistor or the reed switch are triggered
     counter++; // counter value goes up one
     // save value in EEPROM address
     EEPROM.write(ADDRESS, counter);
 
     if (counter > 9) {
       counter = 0;
+      EEPROM.write(ADDRESS, counter);
       // the 7-segment display only goes up to 9, after that it will reset
     }
   }
@@ -117,7 +118,7 @@ void seg_display(int counter_number) {
     digitalWrite(SEG_PIN_E, HIGH);
     digitalWrite(SEG_PIN_F, HIGH);
     digitalWrite(SEG_PIN_G, LOW);
-    break; // break out of loop so that it cannot be used to tamper with box
+    break;
   case 1 :
     digitalWrite(SEG_PIN_A, LOW);
     digitalWrite(SEG_PIN_B, HIGH);
@@ -126,7 +127,7 @@ void seg_display(int counter_number) {
     digitalWrite(SEG_PIN_E, LOW);
     digitalWrite(SEG_PIN_F, LOW);
     digitalWrite(SEG_PIN_G, LOW);
-    break; // break out of loop so that it cannot be used to tamper with box
+    break;
   case 2 :
     digitalWrite(SEG_PIN_A, HIGH);
     digitalWrite(SEG_PIN_B, HIGH);
@@ -135,7 +136,7 @@ void seg_display(int counter_number) {
     digitalWrite(SEG_PIN_E, HIGH);
     digitalWrite(SEG_PIN_F, LOW);
     digitalWrite(SEG_PIN_G, HIGH);
-    break; // break out of loop so that it cannot be used to tamper with box
+    break;
   case 3 :
     digitalWrite(SEG_PIN_A, HIGH);
     digitalWrite(SEG_PIN_B, HIGH);
@@ -144,7 +145,7 @@ void seg_display(int counter_number) {
     digitalWrite(SEG_PIN_E, LOW);
     digitalWrite(SEG_PIN_F, LOW);
     digitalWrite(SEG_PIN_G, HIGH);
-    break; // break out of loop so that it cannot be used to tamper with box
+    break;
   case 4 :
     digitalWrite(SEG_PIN_A, LOW);
     digitalWrite(SEG_PIN_B, HIGH);
@@ -153,7 +154,7 @@ void seg_display(int counter_number) {
     digitalWrite(SEG_PIN_E, LOW);
     digitalWrite(SEG_PIN_F, HIGH);
     digitalWrite(SEG_PIN_G, HIGH);
-    break; // break out of loop so that it cannot be used to tamper with box
+    break;
   case 5 :
     digitalWrite(SEG_PIN_A, HIGH);
     digitalWrite(SEG_PIN_B, LOW);
@@ -162,7 +163,7 @@ void seg_display(int counter_number) {
     digitalWrite(SEG_PIN_E, LOW);
     digitalWrite(SEG_PIN_F, HIGH);
     digitalWrite(SEG_PIN_G, HIGH);
-    break; // break out of loop so that it cannot be used to tamper with box
+    break;
   case 6 :
     digitalWrite(SEG_PIN_A, HIGH);
     digitalWrite(SEG_PIN_B, LOW);
@@ -171,7 +172,7 @@ void seg_display(int counter_number) {
     digitalWrite(SEG_PIN_E, HIGH);
     digitalWrite(SEG_PIN_F, HIGH);
     digitalWrite(SEG_PIN_G, HIGH);
-    break; // break out of loop so that it cannot be used to tamper with box
+    break;
   case 7 :
     digitalWrite(SEG_PIN_A, HIGH);
     digitalWrite(SEG_PIN_B, HIGH);
@@ -180,7 +181,7 @@ void seg_display(int counter_number) {
     digitalWrite(SEG_PIN_E, LOW);
     digitalWrite(SEG_PIN_F, LOW);
     digitalWrite(SEG_PIN_G, LOW);
-    break; // break out of loop so that it cannot be used to tamper with box
+    break;
   case 8 :
     digitalWrite(SEG_PIN_A, HIGH);
     digitalWrite(SEG_PIN_B, HIGH);
@@ -189,7 +190,7 @@ void seg_display(int counter_number) {
     digitalWrite(SEG_PIN_E, HIGH);
     digitalWrite(SEG_PIN_F, HIGH);
     digitalWrite(SEG_PIN_G, HIGH);
-    break; // break out of loop so that it cannot be used to tamper with box
+    break;
   case 9 :
     digitalWrite(SEG_PIN_A, HIGH);
     digitalWrite(SEG_PIN_B, HIGH);
@@ -198,7 +199,7 @@ void seg_display(int counter_number) {
     digitalWrite(SEG_PIN_E, LOW);
     digitalWrite(SEG_PIN_F, HIGH);
     digitalWrite(SEG_PIN_G, HIGH);
-    break; // break out of loop so that it cannot be used to tamper with box
+    break;
   }
 }
 
